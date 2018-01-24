@@ -43,7 +43,7 @@ static const rpd_create_f cpu_reorder_impl_list[] = {
     simple_reorder_t<f32, chwn, f32, nChw8c, fmt_order::reverse>::pd_t::create,
     simple_reorder_t<f32, nhwc, f32, nChw8c, fmt_order::keep>::pd_t::create,
     simple_reorder_t<f32, nhwc, f32, nChw8c, fmt_order::reverse>::pd_t::create,
-    simple_reorder_t<f32, nchw, f32, nChw16c, fmt_order::keep>::pd_t::create,
+    simple_reorder_t<f32, nchw, f32, nChw16c, fmt_order::keep>::pd_t::create, // data layout for resnet18 - 1
     simple_reorder_t<f32, nchw, f32, nChw16c, fmt_order::reverse>::pd_t::create,
     simple_reorder_t<s32, nchw, s32, nChw16c, fmt_order::keep>::pd_t::create,
     simple_reorder_t<s32, nchw, s32, nChw16c, fmt_order::reverse>::pd_t::create,
@@ -87,7 +87,7 @@ static const rpd_create_f cpu_reorder_impl_list[] = {
     simple_reorder_t<f32, hwio, f32, OIhw16i16o, fmt_order::reverse>::pd_t::create,
     simple_reorder_t<f32, goihw, f32, gOIhw8i8o, fmt_order::keep>::pd_t::create,
     simple_reorder_t<f32, goihw, f32, gOIhw8i8o, fmt_order::reverse>::pd_t::create,
-    simple_reorder_t<f32, goihw, f32, gOIhw16i16o, fmt_order::keep>::pd_t::create,
+    simple_reorder_t<f32, goihw, f32, gOIhw16i16o, fmt_order::keep>::pd_t::create, // kernel layout for resnet18 - 1
     simple_reorder_t<f32, goihw, f32, gOIhw16i16o, fmt_order::reverse>::pd_t::create,
     simple_reorder_t<f32, goihw, f32, gOIhw8o8i, fmt_order::keep>::pd_t::create,
     simple_reorder_t<f32, goihw, f32, gOIhw8o8i, fmt_order::reverse>::pd_t::create,

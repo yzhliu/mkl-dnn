@@ -88,7 +88,7 @@ void jit_avx512_common_conv_fwd_kernel::store_output(int ur_w)
         for (int j = 0; j < ur_w; j++) {
             Zmm zmm = zmm_out(j, k);
             int aux_output_offset = get_output_offset(j, k);
-            vadd(zmm, reg_out, aux_output_offset);
+            vadd(zmm, reg_out, aux_output_offset); // reduce over ic_chunk
         }
 
     if (!jcp.with_sum) {
@@ -455,6 +455,7 @@ void jit_avx512_common_conv_fwd_kernel::compute_loop_fma(int ur_w, int pad_l,
     }
     align(16);
     L(kh_label);
+//    for (int khi = 0; khi < jcp.kh; ++khi) // this line reduce performance from 0.77ms to 0.82ms
     {
         int step = 0;
         int ker_prfs = 0;
@@ -478,10 +479,17 @@ void jit_avx512_common_conv_fwd_kernel::compute_loop_fma(int ur_w, int pad_l,
 
                 bool ker_prf_inserted = false;
                 Zmm zmm_kernel = zmm_ker(step % ker_pipeline_depth);
+//                Zmm zmm_kernel = zmm_ker(0);
+//                vmovups(zmm_kernel, EVEX_compress_addr(aux_reg_ker, get_kernel_offset(ki, ic, 0, 0)));
+
                 int j_start = get_ow_start(ki, pad_l);
                 int j_end = get_ow_end(ur_w, ki, pad_r);
+//                fprintf(stderr, "step=%d, pad_l=%d, pad_r=%d, j_start=%d, j_end=%d\n",
+//                        step, pad_l, pad_r, j_start, j_end);
                 for (int j = j_start; j < j_end; j++) {
                     int aux_input_offset = get_input_offset(ki, ic, j, pad_l);
+//                    int aux_kernel_offset = get_kernel_offset(ki, ic, 0, 0);
+//                    vmovups(zmm_kernel, EVEX_compress_addr(aux_reg_ker, aux_kernel_offset));
                     vfmadd231ps(zmm_out(j, 0), zmm_kernel,
                             EVEX_compress_addr(
                                 aux_reg_inp, aux_input_offset, true));
@@ -521,10 +529,10 @@ void jit_avx512_common_conv_fwd_kernel::compute_loop_fma(int ur_w, int pad_l,
                             }
                         }
                     }
-                }
+                }  // for j <- (j_start ... j_end)
                 step++;
-            }
-        }
+            }  // for ic <- (0 ... ic_block)
+        }  // for ki <- (0 ... kw)
         add(aux_reg_ker, jcp.typesize_in * kw * oc_block * ic_block);
         if (prf_ker)
             add(aux_reg_ker_prf, jcp.typesize_in * kw * oc_block * ic_block);
@@ -536,7 +544,7 @@ void jit_avx512_common_conv_fwd_kernel::compute_loop_fma(int ur_w, int pad_l,
         dec(reg_kj);
         cmp(reg_kj, 0);
         jg(kh_label, T_NEAR);
-    }
+    }  // for (int khi = 0; khi < jcp.kh; ++khi)
 
     L(skip_kh_loop);
 
@@ -766,7 +774,7 @@ void jit_avx512_common_conv_fwd_kernel::generate()
             if ((l_pad <= 0 && n_oi > 0) || (l_pad > 0 && n_oi > 1)) {
                 if (l_pad <= 0 && r_pad1 > 0)
                     n_oi--;
-                Label ow_loop_label;
+                Label ow_loop_label; // loop (ow_chunk)
                 L(ow_loop_label);
                 {
                     add(reg_inp_prf, inp_shift);
@@ -1110,6 +1118,7 @@ status_t jit_avx512_common_conv_fwd_kernel::init_conf(jit_conv_conf_t &jcp,
             }
         }
     }
+    jcp.print_str();
     return status::success;
 }
 

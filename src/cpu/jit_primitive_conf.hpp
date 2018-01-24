@@ -89,6 +89,55 @@ struct jit_conv_conf_t {
     int src_count;
     bool expl_bcast;
     bool large_spatial;
+
+    void print_str() {
+        fprintf(stderr, "--- jit_conv_conf_t --- \n"
+        "prop_kind=%d\n"
+        "ver=%d\n"
+        "loop_order=%d\n"
+        "mb = %d\n"
+        "ngroups=%d, ic=%d, oc=%d\n"
+        "ih=%d, iw=%d, oh=%d, ow=%d\n"
+        "l_pad=%d, t_pad=%d\n"
+        "r_pad=%d, b_pad=%d\n"
+        "kh=%d, kw=%d\n"
+        "stride_h=%d, stride_w=%d\n"
+        "dilate_h=%d, dilate_w=%d\n"
+        "src_fmt=%d\n"
+        "with_bias=%d, with_relu=%d\n"
+        "relu_negative_slope=%.2f\n"
+        "with_sum=%d\n"
+        "ihp=%d, iwp=%d, ohp=%d, owp=%d\n"
+        "nb_ic=%d, ic_block=%d\n"
+        "nb_oc=%d, oc_block=%d\n"
+        "nb_ic_blocking=%d, nb_oc_blocking=%d\n"
+        "nb_ic_blocking_max=%d\n"
+        "nb_ic_L2=%d, nb_oc_L2=%d\n"
+        "ur_h=%d, ur_w=%d\n"
+        "ur_w_tail=%d\n"
+        "is_1stconv=%d\n"
+        "kernel_kind=%d\n"
+        "tr_iw=%d\n"
+        "tr_src_num_guard_elems=%d\n"
+        "tr_ld=%d\n"
+        "kh_step=%d\n"
+        "typesize_in=%d, typesize_out=%d\n"
+        "ic_nb1=%d, ic_nb2=%d\n"
+        "oc_nb1=%d\n"
+        "ur_ow_max=%d, ur_ow=%d, ur_ow_tail=%d\n"
+        "ur_ow_nsteps=%d\n"
+        "bia_dt=%d, dst_dt=%d\n"
+        "src_count=%d\n"
+        "expl_bcast=%d, large_spatial=%d\n", prop_kind, ver, loop_order,
+        mb, ngroups, ic, oc, ih, iw, oh, ow,
+        l_pad, t_pad, r_pad, b_pad, kh, kw, stride_h, stride_w, dilate_h, dilate_w,
+        src_fmt, with_bias, with_relu, relu_negative_slope, with_sum, ihp, iwp, ohp, owp,
+        nb_ic, ic_block, nb_oc, oc_block, nb_ic_blocking, nb_oc_blocking,
+        nb_ic_blocking_max, nb_ic_L2, nb_oc_L2, ur_h, ur_w, ur_w_tail, is_1stconv,
+        kernel_kind, tr_iw, tr_src_num_guard_elems, tr_ld, kh_step, typesize_in, typesize_out,
+        ic_nb1, ic_nb2, oc_nb1, ur_ow_max, ur_ow, ur_ow_tail, ur_ow_nsteps, bia_dt, dst_dt,
+        src_count, expl_bcast, large_spatial);
+    }
 };
 
 /*

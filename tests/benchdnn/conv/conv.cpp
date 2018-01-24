@@ -221,6 +221,15 @@ inline int compare_dst(const prb_t *p, dnn_mem_t &mem_dt, dnn_mem_t &mem_fp,
         res_t *r, bool final_compare = false)
 { return compare_dat(p, DST, mem_dt, mem_fp, r, final_compare); }
 
+inline void print_array(float *mem, int size) {
+    for (int i = 0; i < size; ++i) {
+        if (i % 32 == 0) {
+            fprintf(stdout, "\n");
+        }
+        fprintf(stdout, "%.2f ", mem[i]);
+    }
+}
+
 inline int fill_src(const prb_t *p, dnn_mem_t &mem_dt, dnn_mem_t &mem_fp,
         res_t *r) {
     const bool extra_mem = mem_dt.dt() != mem_fp.dt();
@@ -249,6 +258,7 @@ inline int fill_src(const prb_t *p, dnn_mem_t &mem_dt, dnn_mem_t &mem_fp,
         ((float*)mem_00)[src_off_f(p, mb, 0, ic, ih, iw)] = value;
     }
 
+    fprintf(stderr, "reorder for src\n");
     SAFE(mem_dt.reorder(mem_00), WARN);
     if (extra_mem) {
         SAFE(mem_fp.reorder(mem_dt), WARN);
@@ -288,12 +298,20 @@ inline int fill_wei(const prb_t *p, dnn_mem_t &mem_dt, dnn_mem_t &mem_fp,
         ((float*)mem_00)[wei_off_f(p, g, oc, ic, kh, kw)] = value;
     }
 
+//    const int size = p->g * p->oc * p->ic * p->kh * p->kw;
+//    fprintf(stdout, "\n\n--- Print kernel mem_00 ---\n");
+//    print_array((float*)mem_00, size);
+
+    fprintf(stderr, "reorder for weight\n");
     SAFE(mem_dt.reorder(mem_00), WARN);
     if (extra_mem) {
         SAFE(mem_fp.reorder(mem_dt), WARN);
         SAFE(compare_wei(p, mem_fp, mem_00, r), WARN);
         delete &mem_00;
     }
+
+//    fprintf(stdout, "\n\n--- Print kernel mem_dt ---\n");
+//    print_array((float*)mem_dt, size);
 
     return OK;
 }
@@ -320,6 +338,7 @@ inline int fill_bia(const prb_t *p, dnn_mem_t &mem_dt, dnn_mem_t &mem_fp,
         ((float*)mem_00)[i] = value;
     }
 
+    fprintf(stderr, "reorder for bias\n");
     SAFE(mem_dt.reorder(mem_00), WARN);
     if (extra_mem) {
         SAFE(mem_fp.reorder(mem_dt), WARN);
@@ -358,6 +377,7 @@ inline int fill_dst(const prb_t *p, dnn_mem_t &mem_dt, dnn_mem_t &mem_fp,
         ((float*)mem_00)[dst_off_f(p, mb, 0, oc, oh, ow)] = value;
     }
 
+    fprintf(stderr, "reorder for dst\n");
     SAFE(mem_dt.reorder(mem_00), WARN);
     if (extra_mem) {
         SAFE(mem_fp.reorder(mem_dt), WARN);

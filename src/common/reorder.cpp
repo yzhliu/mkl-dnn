@@ -56,8 +56,13 @@ status_t mkldnn_reorder_primitive_desc_create_v2(
     if (attr == NULL)
         attr = &dummy_attr;
 
+    int i = 0;
     for (auto r = e->get_reorder_implementation_list(); *r; ++r) {
-        if ((*r)(r_pd, i_mpd, o_mpd, attr) == success) return success;
+        if ((*r)(r_pd, i_mpd, o_mpd, attr) == success) {
+            fprintf(stderr, "Using number %d reorder impl\n", i);
+            return success;
+        }
+        i++;
     }
     return unimplemented;
 }

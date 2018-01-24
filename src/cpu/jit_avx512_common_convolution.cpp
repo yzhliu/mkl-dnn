@@ -85,6 +85,8 @@ void _jit_avx512_common_convolution_fwd_t
         int start, end, start_copy;
         int work_amount = jcp.mb * jcp.ngroups * oc_chunks * jcp.oh;
         balance211(work_amount, nthr, ithr, start, end);
+//        fprintf(stderr, "balance211(work_amount=%d, nthr=%d, ithr=%d, start=%d, end=%d)\n",
+//                work_amount, nthr, ithr, start, end);
         start_copy = start;
 
         jit_conv_call_s par_conv = { 0 };
@@ -101,10 +103,12 @@ void _jit_avx512_common_convolution_fwd_t
             if (jcp.loop_order == loop_cgn)
                 nd_iterator_init(start,
                     occ, oc_chunks, g, jcp.ngroups, n, jcp.mb, oh_s, jcp.oh);
-            else if (jcp.loop_order == loop_gnc)
+            else if (jcp.loop_order == loop_gnc) {
                 nd_iterator_init(start,
-                    g, jcp.ngroups, n, jcp.mb, occ, oc_chunks, oh_s, jcp.oh);
-            else
+                                 g, jcp.ngroups, n, jcp.mb, occ, oc_chunks, oh_s, jcp.oh);
+//                fprintf(stderr, "after nd_iterator_init under loop_gnc,"
+//                        "n=%d, g=%d, occ=%d, oh_s=%d\n", n, g, occ, oh_s);
+            } else
                 assert(!"unsupported loop order");
 
             while (start < end) {
@@ -123,11 +127,11 @@ void _jit_avx512_common_convolution_fwd_t
                 auto wht_w = weights + wht_blk_off(weights_d, g, ocb, icb_l2);
 
                 for (int icb = icb_l2;
-                     icb < min(jcp.nb_ic, icb_l2 + jcp.nb_ic_L2); ++icb) {
+                     icb < min(jcp.nb_ic, icb_l2 + jcp.nb_ic_L2); ++icb) {  // loop (ic_chunk)
                     auto src_c = src_w;
                     auto dst_c = dst_w;
                     for (int oj = oh_s, ij = ih_s;
-                            oj < oh_e; ++oj, ij += jcp.stride_h)
+                            oj < oh_e; ++oj, ij += jcp.stride_h)  // loop ( (split) oh)
                     {
                         int i_t_overflow = -min(0, ij);
                         int i_b_overflow = max(jcp.ih, ij + jcp.kh) - jcp.ih;
